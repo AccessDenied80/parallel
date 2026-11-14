@@ -1,18 +1,26 @@
 #!/bin/bash
-# Збирає Parallel.app у ./build. Використання: ./build.sh [--install]
+# Збирає універсальний (Apple Silicon + Intel) Parallel.app у ./build.
+# Використання: ./build.sh [--install]
 set -euo pipefail
 cd "$(dirname "$0")"
 
-swift build -c release
-BIN="$(swift build -c release --show-bin-path)/Parallel"
+ARCHS=(arm64 x86_64)
+BINS=()
+for arch in "${ARCHS[@]}"; do
+    triple="$arch-apple-macosx14.0"
+    echo "▸ Збирання $arch"
+    swift build -c release --triple "$triple"
+    BINS+=("$(swift build -c release --triple "$triple" --show-bin-path)/Parallel")
+done
 
 APP="build/Parallel.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN" "$APP/Contents/MacOS/Parallel"
+lipo -create "${BINS[@]}" -output "$APP/Contents/MacOS/Parallel"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 codesign --force --sign - "$APP"
+lipo -info "$APP/Contents/MacOS/Parallel"
 echo "Готово: $PWD/$APP"
 
 if [[ "${1:-}" == "--install" ]]; then

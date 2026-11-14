@@ -7,8 +7,19 @@ SwiftUI-застосунок для macOS, який запускає кільк�
 Потрібні macOS 14+ і Swift 5.10+ (Command Line Tools достатньо, повний Xcode не обов'язковий).
 
 ```bash
-./build.sh            # → build/Parallel.app
-./build.sh --install  # ще й копіює в /Applications
+./build.sh               # → build/Parallel.app (універсальний: Apple Silicon + Intel)
+./build.sh --install     # ще й копіює в /Applications
+./scripts/make-dmg.sh    # → build/Parallel-<версія>.dmg
+```
+
+Universal-бінарник збирається окремо для `arm64` і `x86_64` та склеюється через `lipo`, тому Xcode не потрібен.
+
+### Встановлення з DMG на іншому Mac
+
+Застосунок підписаний ad-hoc, без Developer ID і нотаризації, тому під час першого запуску завантаженого DMG macOS попередить про неперевіреного розробника. Відкрийте його так: клацніть правою кнопкою на `Parallel.app` → **Відкрити**. На macOS 15+ замість цього: **Системні параметри → Конфіденційність і безпека → «Все одно відкрити»**. Або зніміть карантин:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Parallel.app
 ```
 
 ## Як користуватися
